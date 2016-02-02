@@ -1,0 +1,3 @@
+#!/bin/bash
+./client_file > dry.calendar.js
+cp ./node_modules/dry-underscore/dry.underscore.js ./

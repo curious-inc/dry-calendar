@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo '"use strict"'
+echo "if(window['dry'] === undefined){ window.dry = {}; }"
+
+echo "(function(){"
+
+echo "var calendar = dry.calendar = (" 
+node -e "console.log(require('./lib/calendar.js').library.toString())" 
+echo ")();" 
+ 
+echo "var client_calendar = dry.client_calendar = (" 
+node -e "console.log(require('./lib/client_calendar.js').library.toString())" 
+echo ")();" 
+ 
+echo "})();" 

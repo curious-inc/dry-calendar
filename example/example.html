@@ -1,0 +1,59 @@
+<html>
+    <head>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script type="text/javascript" src="/js/dry.underscore.js"></script>
+        <script type="text/javascript" src="/js/dry.calendar.js"></script>
+        <link rel="stylesheet" type="text/css" href="/css/example.css">
+    </head>
+
+    <script>
+        var c = dry.client_calendar({ 
+            week_start: 6,
+            switch_to_month: false,
+            selector: ".calendar_one",
+            start_date: _.iso_date("2016-02-01"), end_date: _.iso_date("2016-03-01") 
+        });
+
+        $(function(){
+
+            c.month_handler(function(d, disable){
+                if(d.year <= 2015){ disable(); }
+                if(d.year >= 2017){ disable(); }
+            });
+
+            c.day_handler(function(d, disable, classes){
+                if(d.weekday === 5){ disable(); }
+                if(d.weekday === 3){ classes("wednesday"); }
+            });
+
+            c.render();
+
+            c.on("date_changed", function(date){
+                _.p("changed: ", date);
+            });
+
+            var count = 0;
+            c.on("date_selected", function(date, cancel){
+                // if(count++ >= 3){ cancel(); }
+                
+                _.p("selected: ", date);
+            });
+
+            c.on("date_deselected", function(date, cancel){
+                cancel();
+                _.p("deselected: ", date);
+            });
+  
+        });
+
+    </script>
+
+    <body>
+        <h1>Have a calendar.</h1>
+
+        <div class="calendar_one"></div>
+        <div class="calendar_one"></div>
+
+    </body>
+
+</html>

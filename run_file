@@ -1,0 +1,21 @@
+
+from subprocess import call
+
+import os
+
+def _shell(cmd):
+    return call(cmd.split(), shell = True)
+
+def test(args):
+    return _shell('./node_modules/dry-test/bin/dry-test ' + " ".join(args))
+
+def make(args):
+    return _shell('./build')
+
+def ex(args):
+    make(args)
+    _shell('cd example && open "http://localhost:8080/example.html" && python -m SimpleHTTPServer 8080')
+
+def default(args):
+    return test(args)
+

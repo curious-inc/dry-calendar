@@ -1,0 +1,27 @@
+{
+    "name":"dry-calendar",
+    "version": "0.0.1",
+    "description": "A decent, extensible, client side calendar, and two side calendar calculator",
+    "author": {
+        "name": "Kendrick Taylor",
+        "email": "kendrick@suoiruc.com"
+    },
+    "homepage": "http://dryjs.com/",
+	"repository": {
+        "type": "git",
+        "url": "git://github.com/curious-inc/dry-client-calendar.git"
+    },
+    "bugs": {
+        "url": "http://github.com/curious-inc/dry-client-calendar/issues"
+    },
+    "main": "lib/index.js",
+    "directories": {
+        "lib": "./lib"
+    },
+    "devDependencies": {
+        "dry-test": "0.1.6"
+    },
+    "dependencies":{
+        "dry-underscore":""
+    }
+}

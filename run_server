@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cd example && open "http://localhost:8080/example.html" && python -m SimpleHTTPServer 8080
