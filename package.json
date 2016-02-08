@@ -9,10 +9,10 @@
     "homepage": "http://dryjs.com/",
 	"repository": {
         "type": "git",
-        "url": "git://github.com/curious-inc/dry-client-calendar.git"
+        "url": "git://github.com/curious-inc/dry-calendar.git"
     },
     "bugs": {
-        "url": "http://github.com/curious-inc/dry-client-calendar/issues"
+        "url": "http://github.com/curious-inc/dry-calendar/issues"
     },
     "main": "lib/index.js",
     "directories": {

@@ -9,12 +9,14 @@
     <script>
         var c = dry.client_calendar({ 
             week_start: 6,
-            switch_to_month: false,
+            // switch_to_month: false,
             selector: ".calendar_one",
             start_date: _.iso_date("2016-02-01"), end_date: _.iso_date("2016-03-01") 
         });
 
         $(function(){
+
+            var week_buttons = false;
 
             c.month_handler(function(d, disable){
                 if(d.year <= 2015){ disable(); }
@@ -25,6 +27,29 @@
                 if(d.weekday === 5){ disable(); }
                 if(d.weekday === 3){ classes("wednesday"); }
             });
+
+            c.render_handler(function(calendar){
+                if(week_buttons){ add_week_buttons(calendar); }
+            });
+
+            function add_week_buttons(calendar){
+                calendar.find("thead tr").each(function(){
+                    $(this).prepend($("<td></td>"));
+                });
+
+                calendar.find("tbody tr").each(function(){
+                    var button = $('<td><button class="select_week">x</button></td>');
+                    button.click(function(){
+                        var dates = [];
+                        $(this).siblings("td").each(function(){
+                            var date = $(this).data("date");
+                            if(date){ dates.push(date); }
+                        });
+                        _.p("week dates: ", dates);
+                    });
+                    $(this).prepend(button);
+                });
+            }
 
             c.render();
 
@@ -43,7 +68,11 @@
                 cancel();
                 _.p("deselected: ", date);
             });
-  
+
+            $("button.toggle_week_buttons").click(function(){
+                week_buttons = !week_buttons;
+                c.render();
+            });
         });
 
     </script>
@@ -53,6 +82,7 @@
 
         <div class="calendar_one"></div>
         <div class="calendar_one"></div>
+        <button class="toggle_week_buttons">Toggle week buttons</button>
 
     </body>
 

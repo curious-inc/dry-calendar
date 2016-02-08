@@ -11,7 +11,7 @@ This is a node and browser module that is an abstraction of the calendar computa
 
 This is the client side html calendar.
 
-This relies on `dry.underscore.js`, and jquery to work. There is a current version of `dry.underscore.js` in the root of the repo. Take a look at the example for usage.
+This relies on `dry.underscore.js`, and jquery to work. There is a version of `dry.underscore.js` in the root of the repo. Take a look at the example for usage.
 
 There is a pretty good example of the `client_calendar` functionality and styling in `example/example.html` and `example/css/example.css`.
 

@@ -1,13 +1,9 @@
 
-*, *:before, *:after {
-  box-sizing: inherit;
-}
+*, *:before, *:after { box-sizing: inherit; }
 
 .calendar { box-sizing: border-box; }
 
-.calendar thead {
-    text-align: center;
-}
+.calendar thead { text-align: center; }
 
 .calendar thead .weekdays td{
     height: 20px;

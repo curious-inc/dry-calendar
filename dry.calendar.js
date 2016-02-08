@@ -189,6 +189,7 @@ function library(){
         self._selected_date = null;
         self._day_handler = options.day_handler || null;
         self._month_handler = options.month_handler || null;
+        self._render_handler = options.render_handler || null;
         self._selector = options.selector || _.fatal("You must provide a selector.");
 
         self._switch_to_month = (options.switch_to_month === undefined ? true : options.switch_to_month);
@@ -204,6 +205,7 @@ function library(){
 
     client_calendar.prototype.month_handler = _.rw("_month_handler"); 
     client_calendar.prototype.day_handler = _.rw("_day_handler"); 
+    client_calendar.prototype.render_handler = _.rw("_render_handler"); 
 
     client_calendar.prototype.$ = function(sel, no_space){ return($(this._selector + (no_space ? "" : " ") + (sel ? sel : ""))); };
 
@@ -334,6 +336,8 @@ function library(){
 
         table.append(header);
         table.append(body);
+
+        if(this.render_handler()){ this.render_handler()(table); }
 
         this.$().empty();
         this.$().append(table);
