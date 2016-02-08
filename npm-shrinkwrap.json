@@ -1,10 +1,10 @@
 {
   "name": "dry-calendar",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": {
     "dry-underscore": {
-      "version": "0.16.2",
-      "from": "dry-underscore@",
+      "version": "0.17.0",
+      "from": "dry-underscore@latest",
       "dependencies": {
         "tamejs": {
           "version": "0.4.14",
