@@ -7,28 +7,57 @@
     </head>
 
     <script>
-        var c = dry.client_calendar({ 
+
+        var c_one = dry.client_calendar({ 
             week_start: 6,
-            // switch_to_month: false,
+            // year_label: false,
+            switch_to_month: false,
             selector: ".calendar_one",
-            start_date: _.iso_date("2016-02-01"), end_date: _.iso_date("2016-03-01") 
+            start_date: _.iso_date("2016-02-01"), 
+        });
+
+        var c_two = dry.client_calendar({ 
+            selector: "#calendar_two",
+            start_date: _.iso_date("2016-01-01"), 
+            first_date: _.iso_date("2015-10-10"), 
+            last_date: _.iso_date("2016-04-20") 
+        });
+
+        var c_three = dry.client_calendar({ 
+            selector: ".calendar_three",
+            first_date: _.iso_date("2015-10-10"), 
+            last_date: _.iso_date("2016-04-20") 
+        });
+
+        var c_four = dry.client_calendar({ 
+            selector: ".calendar_four"
         });
 
         $(function(){
 
+            c_four.day_handler(function(d){
+                d.element.prepend("day:");
+            });
+
+            c_four.render();
+
+            c_three.render();
+
+            c_two.render();
+
             var week_buttons = false;
 
-            c.month_handler(function(d, disable){
-                if(d.year <= 2015){ disable(); }
-                if(d.year >= 2017){ disable(); }
+            c_one.month_handler(function(m){
+                if(m.year <= 2015){ m.disable(); }
+                if(m.year >= 2017){ m.disable(); }
             });
 
-            c.day_handler(function(d, disable, classes){
-                if(d.weekday === 5){ disable(); }
-                if(d.weekday === 3){ classes("wednesday"); }
+            c_one.day_handler(function(d){
+                if(d.weekday === 5){ d.disable(); }
+                if(d.weekday === 3){ d.classes("wednesday"); }
             });
 
-            c.render_handler(function(calendar){
+            c_one.render_handler(function(calendar){
                 if(week_buttons){ add_week_buttons(calendar); }
             });
 
@@ -51,39 +80,67 @@
                 });
             }
 
-            c.render();
+            c_one.render();
 
-            c.on("date_changed", function(date){
+            var toggle = true;
+            c_one.on("date_changed", function(date){
                 _.p("changed: ", date);
+                toggle = !toggle;
             });
 
             var count = 0;
-            c.on("date_selected", function(date, cancel){
+            c_one.on("date_selected", function(date, cancel){
                 // if(count++ >= 3){ cancel(); }
-                
                 _.p("selected: ", date);
             });
 
-            c.on("date_deselected", function(date, cancel){
+            c_one.on("date_deselected", function(date, cancel){
                 cancel();
                 _.p("deselected: ", date);
             });
 
             $("button.toggle_week_buttons").click(function(){
                 week_buttons = !week_buttons;
-                c.render();
+                c_one.render();
             });
+
+            $("button.focus").click(function(){
+                c_four.focus("2015-02-01");
+            });
+
+            $("button.select").click(function(){
+                c_four.select("2015-06-10");
+            });
+  
         });
 
     </script>
 
+    <style>
+        button{ clear: both; float: left; }
+        .calendar{ float: left; margin-right: 50px  }
+        section{ width: 100%; margin-top: 50px; float: left; clear: both; }
+    </style>
+
     <body>
         <h1>Have a calendar.</h1>
 
-        <div class="calendar_one"></div>
-        <div class="calendar_one"></div>
-        <button class="toggle_week_buttons">Toggle week buttons</button>
+        <section>
+            <div class="calendar_one"></div>
+            <div class="calendar_one"></div>
+            <button class="toggle_week_buttons">Toggle week buttons</button>
+        </section>
 
+        <section>
+            <div id="calendar_two"></div>
+            <div class="calendar_three"></div>
+        </section>
+
+        <section>
+            <div class="calendar_four"></div>
+            <button class="focus">Focus 2015-02-01</button>
+            <button class="select">Select 2015-06-10</button>
+        </section>
     </body>
 
 </html>

@@ -12,16 +12,16 @@ function library(){
 
         this.week_start(options.week_start);
 
-        this._start_date = _.moment(options.start_date);
+        this._start_date = options.start_date ? _.moment(options.start_date) : null
 
-        if(!this.start_date().isValid()){ 
+        if(!this._start_date || !this._start_date.isValid()){ 
             _.log.warning("start_date is invalid, using default."); 
-            this._start_date = _.moment().day(1);
+            this._start_date = _.moment().date(1);
         }
 
         this._end_date = options.end_date ? _.moment(options.end_date) : this._start_date.clone().add(1, "month").subtract(1, "day");
 
-        if(!this.end_date().isValid()){ 
+        if(!this._end_date || !this._end_date.isValid()){ 
             _.log.warning("end_date is invalid, using default."); 
             this._end_date = this._start_date.clone().add(30, "days");
         }
@@ -32,8 +32,8 @@ function library(){
         this._fix_dates();
     }
 
-    function date_setter(key){
-        return(function(d){
+    var date_setter = calendar.prototype._date_setter = function date_setter(key, earlier_date_key, later_date_key){
+        return(function(d, no_fix){
             if(d !== undefined){ 
                 var test = _.moment(d);
                 if(test.isValid()){
@@ -41,26 +41,35 @@ function library(){
                 }else{
                     _.log.warning(key.slice(1) + " is invalid, keeping the one we have."); 
                 }
-                this._fix_dates();
-            }
-            return(this[key]);
+                if(no_fix !== true){ 
+                    this._fix_dates(earlier_date_key, later_date_key);
+                }
+            }else if(this[key]){
+                return(_.iso_date(this[key]));
+            }else{ return(null); }
         });
     }
 
-    calendar.prototype.start_date = date_setter("_start_date");
-    calendar.prototype.end_date = date_setter("_end_date");
- 
-    calendar.prototype._fix_dates = function(){
-        if(this.end_date().isBefore(this.start_date())){
-            _.log.warning("start_date is after end_date, swapping them."); 
-            this._swap_dates();
-        }
+    calendar.prototype.start_date = date_setter("_start_date", "_start_date", "_end_date");
+    calendar.prototype.end_date = date_setter("_end_date", "_start_date", "_end_date");
+
+    calendar.prototype._first_day_of_month = function(m){
+        return(m.clone().date(1)); 
     };
 
-    calendar.prototype._swap_dates = function(){
-        var temp = this._end_date;
-        this._end_date = this._start_date;
-        this._start_date = temp;
+    calendar.prototype._last_day_of_month = function(m){
+        return(m.clone().date(1).add(1, "month").subtract(1, "day"));
+    };
+ 
+    calendar.prototype._fix_dates = function(earlier_date_key, later_date_key){
+        if(!this[earlier_date_key] || !this[later_date_key]){ return; }
+
+        if(this[later_date_key].isBefore(this[earlier_date_key])){
+            _.log.warning(earlier_date_key  + ": " + this[earlier_date_key] + " is after " + later_date_key + ": " + this[later_date_key] + "  swapping them."); 
+            var temp = this[later_date_key];
+            this[later_date_key] = this[earlier_date_key];
+            this[earlier_date_key] = temp;
+        }
     };
 
     calendar.prototype.week_start = function(day_number){
@@ -68,40 +77,40 @@ function library(){
         else{ this._week_start = _.abs(day_number % 7); }
     };
 
-    calendar.prototype.first_date = function(){
-        var day_offset = this._weekday_number(this.start_date()); 
-        var first_date = this.start_date().clone();
-        first_date.subtract(day_offset, "days");
-        return(first_date);
+    calendar.prototype._week_first_date = function(){
+        var day_offset = this._weekday_number(this._start_date); 
+        var week_first_date = this._start_date.clone();
+        week_first_date.subtract(day_offset, "days");
+        return(week_first_date);
     };
     
-    calendar.prototype.compute_next_month = function(){
-        var next_month = this.start_date().clone();
+    calendar.prototype._week_last_date = function(){
+        var day_offset = 6 - this._weekday_number(this._end_date); 
+        var week_last_date = this._end_date.clone();
+        week_last_date.add(day_offset, "days");
+        return(week_last_date);
+    };
+
+    calendar.prototype._compute_next_month = function(){
+        var next_month = this._start_date.clone();
         next_month.date(1).add(1, "month");
         return(next_month);
     };
 
-    calendar.prototype.compute_last_month = function(){
-        var last_month = this.start_date().clone();
+    calendar.prototype._compute_last_month = function(){
+        var last_month = this._start_date.clone();
         last_month.date(1).subtract(1, "month");
         return(last_month);
     };
 
     calendar.prototype.next_month = function(){
-        this._end_date = this.compute_next_month().add(1, "month").subtract(1, "day");
-        this._start_date = this.compute_next_month();
+        this._end_date = this._compute_next_month().add(1, "month").subtract(1, "day");
+        this._start_date = this._compute_next_month();
     };
 
     calendar.prototype.last_month = function(){
-        this._end_date = this.compute_last_month().add(1, "month").subtract(1, "day");
-        this._start_date = this.compute_last_month();
-    };
-
-    calendar.prototype.last_date = function(){
-        var day_offset = 6 - this._weekday_number(this.end_date()); 
-        var last_date = this.end_date().clone();
-        last_date.add(day_offset, "days");
-        return(last_date);
+        this._end_date = this._compute_last_month().add(1, "month").subtract(1, "day");
+        this._start_date = this._compute_last_month();
     };
 
     calendar.prototype._weekday_number = function(d){
@@ -113,7 +122,6 @@ function library(){
         if(!_.isNumber(d)){ return(d.isoWeekday() - 1); }
         return((d + this.week_start()) % 7);
     };
-
 
     calendar.prototype.header = function(f){
         var self = this;
@@ -129,14 +137,14 @@ function library(){
     };
 
     calendar.prototype.days = function(f){
-        var current = this.first_date();
-        var last_date = this.last_date();
+        var current = this._week_first_date();
+        var week_last_date = this._week_last_date();
 
         var ret_val = [];
 
         if(!f){ f = function(d){ ret_val.push(d); }; }
 
-        while(current.isSameOrBefore(last_date)){
+        while(current.isSameOrBefore(week_last_date)){
             var weekday = this._weekday_number(current);
             f({ date: _.iso_date(current), year: current.year(), month: current.month(), day: current.date(), weekday: weekday, label: this.weekday_label(weekday) });
             current.add(1, "day");
@@ -162,7 +170,7 @@ function library(){
     };
 
     calendar.prototype.month_label = function(month){
-        if(month === undefined){ month = this.start_date().month(); }
+        if(month === undefined){ month = this._start_date.month(); }
         return(this._month_labels[month]);
     };
 
@@ -186,6 +194,26 @@ function library(){
 
         calendar.class.call(self, options);
 
+        var invalid_date = "2000-02-31";
+
+        var date = _.moment(options.start_date || options.end_date || invalid_date);
+
+        if(!date.isValid()){ 
+            date = _.moment();
+            _.log.warning("start_date or end_date is invalid, using default."); 
+        }
+
+        self._year_label = options.year_label !== false;
+
+        self._start_date = date.clone().date(1);
+        self._end_date = self._start_date.clone().add(1, "month").subtract(1, "day");
+
+        self._last_date = options.last_date ? _.moment(options.last_date) : null;
+        if(self._last_date && !self._last_date.isValid()){ self._last_date = null; }
+
+        self._first_date = options.first_date ? _.moment(options.first_date) : null;
+        if(self._first_date && !self._first_date.isValid()){ self._first_date = null; }
+
         self._selected_date = null;
         self._day_handler = options.day_handler || null;
         self._month_handler = options.month_handler || null;
@@ -197,17 +225,80 @@ function library(){
         self._enable_next_month = true;
         self._enable_last_month = true;
 
+        if(options.select){ self.select(options.select); }
+
         self.on("date_changed", function(d){ self._selected_date = d; });
     }
 
     _.inherit(client_calendar, calendar.class);
     _.event_emitter(client_calendar.prototype);
 
+    client_calendar.prototype.first_date = calendar.class.prototype._date_setter("_first_date", "_first_date", "_last_date");
+    client_calendar.prototype.last_date = calendar.class.prototype._date_setter("_last_date", "_first_date", "_last_date");
+     
+    client_calendar.prototype.year_label = _.rw("_year_label");
+
+    client_calendar.prototype.date_within_range = function(m){
+        if(m && m.isValid()){
+            if(this._first_date && this._first_date.isAfter(m)){
+                return(false);
+            }
+            if(this._last_date && this._last_date.isBefore(m)){
+                return(false);
+            }
+            return(true);
+        }else{ return(false); }
+    };
+
+    client_calendar.prototype.focus = function(date){
+        var m = _.iso_date(date);
+
+        if(this.date_within_range(m)){
+            this._start_date = m.clone().date(1);
+            this._end_date = this._start_date.clone().add(1, "month").subtract(1, "day");
+            this.render();
+        }else{
+            _.log.warning("requested to focus date is out of range or invalid: ", date);
+        }
+    };
+
+    client_calendar.prototype.select = function(date, focus){
+        if(date === undefined){ return(this._selected_date); }
+        if(date === null){ 
+            this._selected_date = null;
+            this.render();
+        }else{
+            var m = _.iso_date(date);
+
+            if(this.date_within_range(m)){
+
+                var new_date = _.iso_date(m);
+
+                var prevent = false;
+                var prevent_f = function(flag){ prevent = prevent || (flag !== false); }
+
+                this.emit("date_selected", new_date, prevent_f);
+                if(prevent){ return; }
+
+                this._selected_date = new_date;
+
+                this.emit("date_changed", new_date);
+
+                if(focus !== false){ this.focus(this._selected_date); }
+                else{ this.render(); }
+
+            }else{
+                _.log.warning("requested selected date is out of range or invalid: ", date);
+                return;
+            }
+        }
+    };
+
     client_calendar.prototype.month_handler = _.rw("_month_handler"); 
     client_calendar.prototype.day_handler = _.rw("_day_handler"); 
     client_calendar.prototype.render_handler = _.rw("_render_handler"); 
 
-    client_calendar.prototype.$ = function(sel, no_space){ return($(this._selector + (no_space ? "" : " ") + (sel ? sel : ""))); };
+    client_calendar.prototype._$ = function(sel, no_space){ return($(this._selector + (no_space ? "" : " ") + (sel ? sel : ""))); };
 
     client_calendar.prototype.switch_to_month = _.rw("_switch_to_month");
 
@@ -216,17 +307,34 @@ function library(){
 
         var month_handler = self.month_handler() || _.noop;
 
-        var next_month = self.compute_next_month();
-        var last_month = self.compute_last_month();
-
-        var next_month_hash = { month: next_month.month(), year: next_month.year() };
-        var last_month_hash = { month: last_month.month(), year: last_month.year() };
+        var next_month = self._compute_next_month();
+        var last_month = self._compute_last_month();
 
         self._enable_next_month = true;
         self._enable_last_month = true;
 
-        month_handler(next_month_hash, function(flag){ self._enable_next_month = (flag === false); });
-        month_handler(last_month_hash, function(flag){ self._enable_last_month = (flag === false); });
+        function make_hash(m, disable_f){
+            return({ month: m.month(), year: m.year(), first_date: _.iso_date(self._first_day_of_month(m)), last_date: _.iso_date(self._last_day_of_month(m)), disable: disable_f });
+        }
+
+        var next_month_hash = make_hash(next_month, function(flag){ self._enable_next_month = (flag === false); });
+        var last_month_hash = make_hash(last_month, function(flag){ self._enable_last_month = (flag === false); });
+
+        var first_date = self.first_date();
+
+        if(first_date && first_date > last_month_hash.last_date){
+            self._enable_last_month = false;
+        }else{
+            month_handler(last_month_hash);
+        }
+
+        var last_date = self.last_date();
+
+        if(last_date && last_date < next_month_hash.first_date){
+            self._enable_next_month = false;
+        }else{
+            month_handler(next_month_hash);
+        }
     };
 
     client_calendar.prototype._make_month_header = function(){
@@ -241,7 +349,11 @@ function library(){
         if(this._enable_next_month){ next_month_button.addClass("enabled"); }
         else{ next_month_button.addClass("disabled"); }
 
-        var month_label = $('<td colspan=5 >' + this.month_label() + '</td>');
+        var label = this.month_label(); 
+
+        if(this._year_label){ label += " " + this._start_date.year(); }
+
+        var month_label = $('<td colspan=5 >' + label + '</td>');
         
         var header_month = $('<tr class="month"></tr>');
 
@@ -279,14 +391,15 @@ function library(){
 
         self.days(function(d){
 
-            var td = $('<td class="day">' + d.day + '</td>')
+            var td = $('<td class="day"><span>' + d.day + '</span></td>')
             td.addClass(d.date);
+            td.data("date", d.date);
 
             if(self._selected_date && d.date === self._selected_date){
                 td.addClass("active");
             }
 
-            var current_month = self.start_date().month();
+            var current_month = self._start_date.month();
             if(d.month < current_month){
                 if(current_month === 11 && d.month === 0){
                     d.next_month = true; 
@@ -307,15 +420,23 @@ function library(){
             else if(d.last_month){ td.addClass("last_month"); }
 
             var disabled = false;
-            day_handler(d, function(flag){ flag = (flag !== false); disabled = flag; }, function(classes){ td.addClass(classes); });
 
-            if(d.last_month && !self._enable_last_month){ disabled = true; td.addClass("hidden"); }
-            if(d.next_month && !self._enable_next_month){ disabled = true; td.addClass("hidden"); }
+            if(self.first_date() && self.first_date() > d.date){
+                disabled = true; 
+            }else if(self.last_date() && self.last_date() < d.date){
+                disabled = true; 
+            }else{ 
+                var day_hash = _.extend({ element: td }, d);
+                day_hash.disable = function(flag){ flag = (flag !== false); disabled = flag; };
+                day_hash.classes = function(classes){ td.addClass(classes); };
+                day_handler(day_hash);
+            }
+
+            if(d.last_month && !self._enable_last_month){ disabled = true; td.addClass("invisible"); }
+            if(d.next_month && !self._enable_next_month){ disabled = true; td.addClass("invisible"); }
 
             if(disabled){ td.addClass("disabled"); }
             else{ td.addClass("enabled"); }
-
-            td.data("date", d.date);
 
             row.append(td);
 
@@ -339,25 +460,27 @@ function library(){
 
         if(this.render_handler()){ this.render_handler()(table); }
 
-        this.$().empty();
-        this.$().append(table);
+        this._$().empty();
+        this._$().append(table);
 
         this._setup_button_handlers();
         this._setup_day_handlers();
     };
 
     client_calendar.prototype.class_date = function(date, classes){
-        this.$("day." + date).addClass(classes);
+        this._$("day." + date).addClass(classes);
     };
 
     client_calendar.prototype._setup_day_handlers = function(){
         var self = this;
 
-        self.$("tbody .day.enabled").click(function(){
+        self._$("tbody .day.enabled").click(function(){
             var date = $(this).data("date");
-            var elem = self.$("tbody .day." + date)
+            var elem = self._$("tbody .day." + date)
 
             var prevent = false;
+
+            // we do the or, because this might pass through several event handlers
             var prevent_f = function(flag){ prevent = prevent || (flag !== false); }
 
             if(elem.hasClass("active")){
@@ -371,7 +494,7 @@ function library(){
                 self.emit("date_selected", date, prevent_f);
                 if(prevent){ return; }
 
-                self.$("tbody td.day").removeClass("active");
+                self._$("tbody td.day").removeClass("active");
                 elem.addClass("active");
 
                 self.emit("date_changed", date);
@@ -392,12 +515,12 @@ function library(){
     client_calendar.prototype._setup_button_handlers = function(){
         var self = this;
 
-        self.$("thead .next_month.enabled").click(function(){
+        self._$("thead .next_month.enabled").click(function(){
             self.next_month();
             self.render();
         });
 
-        self.$("thead .last_month.enabled").click(function(){
+        self._$("thead .last_month.enabled").click(function(){
             self.last_month();
             self.render();
         });

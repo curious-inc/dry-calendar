@@ -1,6 +1,6 @@
 {
   "name": "dry-calendar",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "dependencies": {
     "dry-underscore": {
       "version": "0.17.0",
