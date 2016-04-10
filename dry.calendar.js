@@ -426,7 +426,7 @@ function library(){
             }else if(self.last_date() && self.last_date() < d.date){
                 disabled = true; 
             }else{ 
-                var day_hash = _.extend({ element: td }, d);
+                var day_hash = _.extend({ element: td, calendar: self }, d);
                 day_hash.disable = function(flag){ flag = (flag !== false); disabled = flag; };
                 day_hash.classes = function(classes){ td.addClass(classes); };
                 day_handler(day_hash);
