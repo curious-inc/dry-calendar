@@ -9,8 +9,10 @@ function library(){
         options = options || {};
 
         options.week_start = (options.week_start === undefined ? 0 : options.week_start);
+        options.weeks_per_month = (options.weeks_per_month === undefined ? null : options.weeks_per_month);
 
         this.week_start(options.week_start);
+        this.weeks_per_month(options.weeks_per_month);
 
         this._start_date = options.start_date ? _.moment(options.start_date) : null
 
@@ -77,6 +79,13 @@ function library(){
         else{ this._week_start = _.abs(day_number % 7); }
     };
 
+    calendar.prototype.weeks_per_month = function(weeks){
+        if(weeks === undefined){ return(this._weeks_per_month); }
+        else if(_.isNumber(weeks) && weeks < 4){ weeks = 4; }
+        this._weeks_per_month = weeks;
+    };
+
+
     calendar.prototype._week_first_date = function(){
         var day_offset = this._weekday_number(this._start_date); 
         var week_first_date = this._start_date.clone();
@@ -85,8 +94,13 @@ function library(){
     };
     
     calendar.prototype._week_last_date = function(){
-        var day_offset = 6 - this._weekday_number(this._end_date); 
-        var week_last_date = this._end_date.clone();
+        var end_date = this._end_date;
+        if(this.weeks_per_month()){ 
+            end_date = this._start_date.clone()
+            end_date.add(this.weeks_per_month()-1, "weeks");
+        }
+        var day_offset = 6 - this._weekday_number(end_date); 
+        var week_last_date = end_date.clone();
         week_last_date.add(day_offset, "days");
         return(week_last_date);
     };
