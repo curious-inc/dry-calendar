@@ -1,6 +1,6 @@
 {
     "name":"dry-calendar",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "A decent, extensible, client side calendar, and two side calendar calculator",
     "author": {
         "name": "Kendrick Taylor",
