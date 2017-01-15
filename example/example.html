@@ -8,33 +8,33 @@
 
     <script>
 
-        var c_one = dry.client_calendar({ 
-            week_start: 6,
-            // year_label: false,
-            switch_to_month: false,
-            selector: ".calendar_one",
-            start_date: _.iso_date("2016-02-01"), 
-        });
-
-        var c_two = dry.client_calendar({ 
-            selector: "#calendar_two",
-            start_date: _.iso_date("2016-01-01"), 
-            first_date: _.iso_date("2015-10-10"), 
-            last_date: _.iso_date("2016-04-20") 
-        });
-
-        var c_three = dry.client_calendar({ 
-            selector: ".calendar_three",
-            first_date: _.iso_date("2015-10-10"), 
-            last_date: _.iso_date("2016-04-20") 
-        });
-
-        var c_four = dry.client_calendar({ 
-            selector: ".calendar_four",
-            weeks_per_month: 7
-        });
-
         $(function(){
+
+            var c_one = dry.client_calendar({ 
+                week_start: 6,
+                // year_label: false,
+                switch_to_month: false,
+                selector: ".calendar_one",
+                start_date: _.iso_date("2016-02-01"), 
+            });
+
+            var c_two = dry.client_calendar({ 
+                selector: "#calendar_two",
+                start_date: _.iso_date("2016-01-01"), 
+                first_date: _.iso_date("2015-10-10"), 
+                last_date: _.iso_date("2016-04-20") 
+            });
+
+            var c_three = dry.client_calendar({ 
+                selector: ".calendar_three",
+                first_date: _.iso_date("2015-10-10"), 
+                last_date: _.iso_date("2016-04-20") 
+            });
+
+            var c_four = dry.client_calendar({ 
+                selector: ".calendar_four",
+                weeks_per_month: 7
+            });
 
             c_four.day_handler(function(d){
                 d.element.prepend("day:");
